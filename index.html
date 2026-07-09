@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machado's Grand Slam</title>
+    <!-- Configurações de PWA para Mobile -->
+    <meta name="theme-color" content="#13301c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJwdC1CUiIsCiAgIm5hbWUiOiAiTWFjaGFkbydzIEdyYW5kIFNsYW0iLAogICJzaG9ydF9uYW1lIjogIk1hY2hhZG8gVGVubmlzIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxMzMwMWMiLAogICJ0aGVtZV9jb2xvciI6ICIjMTMzMDFjIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9MTkyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9LAogICAgewogICAgICAic3JjIjogImh0dHBzOi8vaW1hZ2VzLnVuc3Bsc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9NTEyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9CiAgXQp9">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { tennis: { dark: '#0d2114', brand: '#13301c', neon: '#a3cb00', accent: '#306c42', light: '#f4f7f4', border: '#d0dfd5' } },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-tennis-light text-slate-800 min-h-screen font-sans antialiased">
+
+    <div id="app" class="flex flex-col min-h-screen max-w-md mx-auto bg-white shadow-xl md:max-w-2xl lg:max-w-4xl">
+        
+        <header class="bg-tennis-brand text-white px-4 py-4 flex justify-between items-center sticky top-0 z-40 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="relative group cursor-pointer" @click="$refs.profileFile.click()">
+                    <img :src="activePlayer?.photo" class="w-10 h-10 rounded-full border-2 border-tennis-neon object-cover hover:opacity-85 transition">
+                    <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px]">
+                        <i class="fa-solid fa-camera text-white"></i>
+                    </div>
+                    <input type="file" ref="profileFile" class="hidden" accept="image/*" @change="uploadProfilePhoto">
+                </div>
+                <div class="text-left">
+                    <p class="text-[9px] text-tennis-neon uppercase tracking-wider font-extrabold leading-none mb-0.5">Jogador Ativo</p>
+                    <p class="text-sm font-bold leading-tight">{{ activePlayer?.name }}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- Botão de Instalação PWA -->
+                <button v-if="deferredPrompt" @click="installPWA" class="text-xs bg-tennis-neon hover:bg-tennis-neon/80 px-2.5 py-1.5 rounded-lg text-tennis-dark font-extrabold flex items-center gap-1 transition animate-bounce">
+                    <i class="fa-solid fa-download"></i> Instalar App
+                </button>
+                <button @click="showProfileModal = true" class="text-xs bg-tennis-accent hover:bg-tennis-accent/80 px-3 py-1.5 rounded-lg text-tennis-neon font-bold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-sliders"></i> Configurações
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-grow p-4 pb-24 overflow-y-auto">
+            
+            <div v-if="phoneActiveTab === 'dashboard'" class="space-y-4">
+                <div class="text-left">
+                    <h2 class="text-lg font-bold text-tennis-brand tracking-tight">Machado's Grand Slam</h2>
+                    <p class="text-xs text-slate-500 font-medium">Histórico oficial de duelos</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-tennis-brand to-tennis-accent text-white p-5 rounded-2xl shadow-md border border-tennis-accent/30 text-left">
+                    <p class="text-[10px] text-tennis-neon uppercase tracking-wider font-extrabold mb-1">Atual Detentor da Coroa</p>
+                    <div v-if="isConfrontoEmpatado">
+                        <h3 class="text-xl font-bold flex items-center gap-2 text-tennis-neon">
+                            <i class="fa-solid fa-scale-balanced text-amber-400"></i> Confronto Empatado!
+                        </h3>
+                        <p class="text-xs text-slate-200 mt-1">Ambos possuem <span class="font-mono font-bold">{{ players[0]?.wins }} vitórias</span> oficiais.</p>
+                    </div>
+                    <div v-else>
+                        <h3 class="text-xl font-bold flex items-center gap-2 text-white">
+                            <i class="fa-solid fa-crown text-amber-400"></i> {{ currentKing?.name }}
+                        </h3>
+                        <p class="text-xs text-slate-200 mt-1">Liderando com <span class="text-tennis-neon font-bold font-mono">{{ currentKing?.wins }} vitórias oficiais</span> contra {{ currentLoser?.wins }}.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-left">
+                    <div v-for="p in players" :key="p.id" class="bg-white p-4 rounded-xl border border-tennis-border shadow-sm">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Vitórias ({{ p.id === 1 ? 'Gustavo' : 'Otávio' }})</span>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-2xl font-bold text-tennis-brand">{{ p.wins }}</span>
+                            <span class="text-xs font-bold font-mono" :class="p.id === 1 ? 'text-emerald-600' : 'text-amber-600'">({{ winRate(p) }}%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-tennis-brand uppercase tracking-wider">Últimos Confrontos</h4>
+                        <button @click="phoneActiveTab = 'history'" class="text-xs text-tennis-accent font-semibold flex items-center gap-1">Ver todos <i class="fa-solid fa-chevron-right text-[9px]"></i></button>
+                    </div>
+                    
+                    <div class="flex overflow-x-auto gap-4 pb-3 snap-x scrollbar-thin">
+                        <div v-if="matches.length === 0" class="w-full text-center text-xs text-slate-400 py-12 bg-white rounded-xl border border-dashed">Nenhuma partida registrada.</div>
+                        <div v-for="match in sortedMatches.slice(0, 5)" :key="match.id" class="w-64 aspect-square bg-white rounded-xl border border-tennis-border overflow-hidden flex flex-col shadow-sm flex-shrink-0 snap-start">
+                            <div class="relative flex-grow min-h-0 bg-slate-200">
+                                <img :src="getLocalPhoto(match.local)" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                <span class="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider" :class="match.tipo === 'oficial' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-tennis-dark'">{{ match.tipo }}</span>
+                                <div class="absolute bottom-2 left-3 text-white text-left">
+                                    <p class="text-xs font-bold truncate"><i class="fa-solid fa-map-pin text-tennis-neon"></i> {{ match.local }}</p>
+                                    <p class="text-[9px] text-slate-300">Quadra: {{ match.quadra }} | {{ match.data }}</p>
+                                </div>
+                            </div>
+                            <div class="p-3 flex justify-between items-center bg-white border-t shrink-0">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div :class="['w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0', match.vencedor_id === 1 ? 'bg-tennis-brand text-white' : 'bg-tennis-neon text-tennis-dark']">{{ match.vencedor_id === 1 ? 'G' : 'O' }}</div>
+                                    <p class="text-xs font-bold text-slate-700 truncate">{{ match.vencedor_id === 1 ? 'Gustavo!' : 'Otávio!' }}</p>
+                                </div>
+                                <div class="font-mono text-[11px] font-bold bg-tennis-light px-2 py-1 rounded border border-tennis-border text-slate-700">{{ formatScore(match) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="phoneActiveTab === 'new-game'" class="space-y-4 text-left">
+                <h2 class="text-xl font-bold text-tennis-brand">{{ form.id ? 'Editar Partida' : 'Registrar Nova Partida' }}</h2>
+                <div class="bg-white p-4 rounded-xl border border-tennis-border space-y-4 shadow-sm">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Objetivo</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button v-for="t in ['oficial', 'treino']" :key="t" @click="form.tipo = t" :class="['py-2 px-2 rounded-lg text-xs font-semibold border capitalize transition', form.tipo === t ? 'bg-tennis-brand text-white border-tennis-brand' : 'bg-slate-50 text-slate-600 border-slate-200']">{{ t }}</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Local / Clube</label>
+                        <select v-model="form.localSelecionado" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2.5 outline-none mb-2">
+                            <option value="">-- Selecione um local --</option>
+                            <option v-for="loc in locaisLista" :key="loc.id" :value="loc.nome">{{ loc.nome }}</option>
+                            <option value="novo">++ Adicionar Novo Local ++</option>
+                        </select>
+                        <input v-if="form.localSelecionado === 'novo'" type="text" v-model="form.novoLocalNome" placeholder="Nome do novo clube/local" class="w-full bg-slate-50 border border-tennis-brand text-xs rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Tipo de Quadra</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button v-for="surface in ['Saibro', 'Rápida', 'Grama']" :key="surface" @click="form.quadra = surface" :class="['py-2 rounded-lg text-xs font-semibold border transition', form.quadra === surface ? 'bg-tennis-brand text-white border-tennis-brand' : 'bg-slate-50 text-slate-600 border-slate-200']">{{ surface }}</button>
+                        </div>
+                    </div>
+                    <div class="space-y-3 pt-2">
+                        <div class="text-[10px] font-bold text-slate-400 pb-1 border-b">GAMES (GUSTAVO VS OTÁVIO)</div>
+                        <div v-for="s in [1, 2, 3]" :key="s" class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-slate-600">{{ s }}º Set {{ s===3 ? '(Se houver)' : '' }}</span>
+                            <div class="flex gap-2">
+                                <input type="number" min="0" max="9" v-model.number="form['set'+s+'_j1']" @input="validarInputSet('set'+s+'_j1')" class="w-12 border text-center font-mono py-1 rounded">
+                                <span>:</span>
+                                <input type="number" min="0" max="9" v-model.number="form['set'+s+'_j2']" @input="validarInputSet('set'+s+'_j2')" class="w-12 border text-center font-mono py-1 rounded">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Data</label>
+                        <input type="date" v-model="form.data" class="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2.5 font-mono">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button v-if="form.id" @click="resetForm" class="w-1/3 bg-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-xs uppercase">Cancelar</button>
+                    <button @click="registerMatch" :class="[form.id ? 'w-2/3' : 'w-full', 'bg-tennis-brand hover:bg-tennis-accent text-white py-3.5 rounded-xl font-bold text-xs uppercase shadow-md']">Salvar Placar</button>
+                </div>
+            </div>
+
+            <div v-if="phoneActiveTab === 'stats'" class="space-y-6 text-left">
+                <div>
+                    <h2 class="text-xl font-bold text-tennis-brand">Estatísticas Head-to-Head</h2>
+                    <p class="text-xs text-slate-500">Dados acumulados em tempo real.</p>
+                </div>
+
+                <!-- Filtros Principais (Oficial / Treino) -->
+                <div class="bg-white p-1.5 rounded-xl border border-tennis-border flex gap-1">
+                    <button v-for="t in ['oficial', 'treino']" :key="t" @click="statsFilter = t" :class="['flex-1 py-2 rounded-lg text-xs font-semibold capitalize transition', statsFilter === t ? 'bg-tennis-brand text-white' : 'text-slate-500']">Partidas {{ t }}s</button>
+                </div>
+
+                <!-- Filtro de Ano Scrolável -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Filtrar por Ano</label>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none snap-x">
+                        <button @click="statsYearFilter = 'todos'" :class="['px-3 py-1.5 text-xs rounded-lg font-medium border transition shrink-0 snap-start', statsYearFilter === 'todos' ? 'bg-tennis-accent text-white border-tennis-accent' : 'bg-white text-slate-600 border-tennis-border']">Todos</button>
+                        <button v-for="ano in listaAnosDisponiveis" :key="ano" @click="statsYearFilter = ano" :class="['px-4 py-1.5 text-xs rounded-lg font-mono font-medium border transition shrink-0 snap-start', statsYearFilter === ano ? 'bg-tennis-accent text-white border-tennis-accent' : 'bg-white text-slate-600 border-tennis-border']">{{ ano }}</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-tennis-border shadow-sm">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 mb-2">Sets Vencidos totais</h4>
+                        <p class="text-xs font-bold text-tennis-brand">Gustavo: <span class="font-mono text-base text-tennis-accent">{{ totaisAcumulados.setsFilho }}</span></p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">Otávio: <span class="font-mono text-base text-amber-600">{{ totaisAcumulados.setsPai }}</span></p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-tennis-border shadow-sm">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 mb-2">Games Vencidos totais</h4>
+                        <p class="text-xs font-bold text-tennis-brand">Gustavo: <span class="font-mono text-base text-tennis-accent">{{ totaisAcumulados.gamesFilho }}</span></p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">Otávio: <span class="font-mono text-base text-amber-600">{{ totaisAcumulados.gamesPai }}</span></p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-tennis-border shadow-sm">
+                    <h3 class="text-xs font-bold uppercase text-slate-500 mb-4">Distribuição de Vitórias</h3>
+                    <div class="flex justify-between items-center text-xs font-bold mb-2">
+                        <span class="text-tennis-brand">Gustavo: <span class="font-mono">{{ filteredWinRate.j1 }}%</span></span>
+                        <span class="text-amber-600">Otávio: <span class="font-mono">{{ filteredWinRate.j2 }}%</span></span>
+                    </div>
+                    <div class="h-4 bg-amber-500 rounded-full overflow-hidden flex shadow-inner">
+                        <div :style="{ width: filteredWinRate.j1 + '%' }" class="bg-tennis-brand h-full transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold uppercase text-tennis-brand tracking-wider flex items-center gap-1"><i class="fa-solid fa-map-location-dot"></i> Desempenho por Clube</h3>
+                    <div v-if="locaisEstatísticas.length === 0" class="text-center text-xs text-slate-400 py-6 bg-white rounded-xl border border-dashed">Sem dados disponíveis para este período.</div>
+                    <div v-for="estat in locaisEstatísticas" :key="estat.nome" class="bg-white border border-tennis-border rounded-xl p-3 flex gap-3 items-center shadow-sm">
+                        <img :src="estat.foto" class="w-16 h-16 rounded-lg object-cover shadow-sm">
+                        <div class="flex-grow min-w-0 text-xs text-slate-500 font-medium grid grid-cols-2 gap-y-0.5">
+                            <h4 class="text-sm font-bold text-slate-800 col-span-2 truncate">{{ estat.nome }}</h4>
+                            <p>Jogos: <span class="font-mono text-slate-700 font-bold">{{ !estat.total ? 0 : estat.total }}</span></p>
+                            <p>Aproveitamento: <span class="font-mono text-tennis-accent font-bold">{{ calcularAproveitamentoLocal(estat) }}%</span></p>
+                            <p>Vitórias: <span class="font-mono text-emerald-600 font-bold">{{ loggedInUser === 1 ? estat.vitoriasFilho : estat.vitoriasPai }}</span></p>
+                            <p>Derrotas: <span class="font-mono text-red-500 font-bold">{{ loggedInUser === 1 ? estat.derrotasFilho : estat.derrotasPai }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="phoneActiveTab === 'history'" class="space-y-4 text-left">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-tennis-brand">Histórico Geral</h2>
+                        <p class="text-xs text-slate-500">Gerenciamento completo das partidas.</p>
+                    </div>
+                    <span class="bg-tennis-light border text-tennis-brand font-mono text-xs px-2.5 py-1 rounded-full font-bold">{{ matches.length }} Jogos</span>
+                </div>
+                <div class="space-y-3">
+                    <div v-if="matches.length === 0" class="text-xs text-slate-400 text-center py-8 bg-white border border-dashed rounded-xl">Nenhum jogo cadastrado.</div>
+                    <div v-for="match in sortedMatches" :key="match.id" class="bg-white p-4 rounded-xl border border-tennis-border flex justify-between items-center shadow-sm">
+                        <div class="space-y-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded" :class="match.vencedor_id === 1 ? 'bg-tennis-brand text-white' : 'bg-tennis-neon text-tennis-dark'">{{ match.vencedor_id === 1 ? 'Gustavo Venceu' : 'Otávio Venceu' }}</span>
+                                <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border text-slate-600 bg-slate-50">{{ match.tipo }}</span>
+                                <span class="text-[9px] text-slate-400 font-mono">{{ match.data }}</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-800 truncate">{{ match.local }} <span class="text-xs font-normal text-slate-400">({{ match.quadra }})</span></p>
+                            <p class="text-xs font-mono font-bold text-tennis-accent bg-tennis-light px-2 py-0.5 rounded inline-block">{{ formatScore(match) }}</p>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <button @click="carregarParaEdicao(match)" class="text-slate-500 hover:text-tennis-brand p-2 transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button @click="apagarPartida(match)" class="text-slate-400 hover:text-red-600 p-2 transition"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bg-white border-t border-tennis-border fixed bottom-0 left-0 right-0 py-2.5 flex justify-around items-center shadow-lg z-40 max-w-md mx-auto md:max-w-2xl lg:max-w-4xl">
+            <button v-for="tab in [{id:'dashboard', icon:'chart-simple', label:'Dashboard'}, {id:'new-game', icon:'circle-plus', label:'Novo Jogo'}, {id:'stats', icon:'ranking-star', label:'Estatísticas'}, {id:'history', icon:'list-check', label:'Histórico'}]" :key="tab.id" @click="phoneActiveTab = tab.id" :class="['flex flex-col items-center gap-1 text-[10px]', phoneActiveTab === tab.id ? 'text-tennis-brand font-bold' : 'text-slate-400']">
+                <i :class="'fa-solid fa-'+tab.icon+' text-lg'"></i>{{ tab.label }}
+            </button>
+        </nav>
+
+        <div v-if="showProfileModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-5 w-full max-w-md shadow-xl text-left flex flex-col max-h-[85vh]">
+                <div class="mb-3">
+                    <h3 class="text-base font-bold text-tennis-brand">Troca de Usuário e Configurações</h3>
+                    <p class="text-[11px] text-slate-500">Gerencie perfis e mídias do sistema.</p>
+                </div>
+                <div class="flex-grow overflow-y-auto space-y-4 pr-1">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Jogador Ativo</span>
+                        <div class="space-y-2">
+                            <div v-for="player in players" :key="player.id" @click="loggedInUser = player.id" :class="['flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer', loggedInUser === player.id ? 'bg-tennis-light border-tennis-brand ring-2 ring-tennis-brand/10' : 'border-slate-200']">
+                                <img :src="player.photo" class="w-9 h-9 rounded-full object-cover border">
+                                <div class="flex-grow min-w-0">
+                                    <p class="text-xs font-bold text-slate-800 truncate">{{ player.name }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ player.wins }} Vitórias Oficiais</p>
+                                </div>
+                                <div v-if="loggedInUser === player.id" class="text-tennis-accent"><i class="fa-solid fa-circle-check"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="border-slate-100">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Imagens e Exclusão de Locais</span>
+                        <div class="space-y-2 mt-2">
+                            <div v-for="loc in locaisLista" :key="loc.id" class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200 gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <img :src="loc.foto || FOTO_PADRAO" class="w-8 h-8 object-cover rounded shadow-sm shrink-0">
+                                    <span class="text-xs font-semibold text-slate-700 truncate">{{ loc.nome }}</span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <label class="bg-tennis-brand hover:bg-tennis-accent text-white text-[10px] px-2.5 py-1.5 rounded font-bold cursor-pointer">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <input type="file" accept="image/*" class="hidden" @change="e => uploadCourtPhoto(e, loc)">
+                                    </label>
+                                    <button @click="apagarLocal(loc)" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs p-1.5 rounded border border-red-200" title="Apagar Local">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="showProfileModal = false" class="w-full bg-tennis-brand text-white mt-4 py-2 rounded-lg font-bold text-xs text-center">Salvar & Fechar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxflD0IniEjX_M6YDLLdBK4w9gCAJ5ocg",
+            authDomain: "machados-tennis.firebaseapp.com",
+            projectId: "machados-tennis",
+            storageBucket: "machados-tennis.firebasestorage.app",
+            messagingSenderId: "744932524108",
+            appId: "1:744932524108:web:6af634e757c7622dbbb4e9"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getFirestore(firebaseApp);
+        window.FB = { db, collection, addDoc, getDocs, doc, updateDoc, deleteDoc };
+
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const phoneActiveTab = ref('dashboard');
+                const loggedInUser = ref(1); 
+                const showProfileModal = ref(false);
+                const statsFilter = ref('oficial');
+                const statsYearFilter = ref('todos'); 
+                const deferredPrompt = ref(null); 
+                const FOTO_PADRAO = "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=400&q=80";
+
+                const players = ref([
+                    { id: 1, docId: "filho", name: "Gustavo Machado (Filho)", wins: 0, photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" },
+                    { id: 2, docId: "pai", name: "Otávio Machado (Pai)", wins: 0, photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" }
+                ]);
+                const matches = ref([]);
+                const locaisLista = ref([]); 
+
+                const form = ref({ id: null, tipo: 'oficial', localSelecionado: '', novoLocalNome: '', quadra: 'Saibro', set1_j1: 0, set1_j2: 0, set2_j1: 0, set2_j2: 0, set3_j1: 0, set3_j2: 0, data: new Date().toISOString().split('T')[0] });
+
+                const activePlayer = computed(() => players.value.find(p => p.id === loggedInUser.value));
+                const isConfrontoEmpatado = computed(() => players.value[0]?.wins === players.value[1]?.wins);
+                const sortedMatches = computed(() => [...matches.value].sort((a, b) => new Date(b.data) - new Date(a.data)));
+                const currentKing = computed(() => players.value[0].wins >= players.value[1].wins ? players.value[0] : players.value[1]);
+                const currentLoser = computed(() => players.value[0].wins < players.value[1].wins ? players.value[0] : players.value[1]);
+                
+                const listaAnosDisponiveis = computed(() => {
+                    const anos = matches.value.map(m => {
+                        if(!m.data) return null;
+                        return m.data.split('-')[0]; 
+                    }).filter(Boolean);
+                    return [...new Set(anos)].sort((a, b) => b - a);
+                });
+
+                const filteredMatchesForStats = computed(() => {
+                    return matches.value.filter(m => {
+                        const matchesTipo = m.tipo === statsFilter.value;
+                        if (statsYearFilter.value === 'todos') {
+                            return matchesTipo;
+                        }
+                        const matchAno = m.data ? m.data.split('-')[0] : '';
+                        return matchesTipo && matchAno === statsYearFilter.value;
+                    });
+                });
+
+                const validarInputSet = (campo) => {
+                    let val = parseInt(form.value[campo], 10);
+                    if (isNaN(val) || val < 0) form.value[campo] = 0;
+                    if (val > 9) form.value[campo] = 9;
+                };
+
+                const totaisAcumulados = computed(() => {
+                    let stats = { setsFilho: 0, setsPai: 0, gamesFilho: 0, gamesPai: 0 };
+                    filteredMatchesForStats.value.forEach(m => {
+                        stats.gamesFilho += (m.set1_j1 || 0) + (m.set2_j1 || 0) + (m.set3_j1 || 0);
+                        stats.gamesPai += (m.set1_j2 || 0) + (m.set2_j2 || 0) + (m.set3_j2 || 0);
+
+                        if ((m.set1_j1 || 0) > (m.set1_j2 || 0)) stats.setsFilho++; else if ((m.set1_j2 || 0) > (m.set1_j1 || 0)) stats.setsPai++;
+                        if ((m.set2_j1 || 0) > (m.set2_j2 || 0)) stats.setsFilho++; else if ((m.set2_j2 || 0) > (m.set2_j1 || 0)) stats.setsPai++;
+                        if (m.set3_j1 || m.set3_j2) {
+                            if ((m.set3_j1 || 0) > (m.set3_j2 || 0)) stats.setsFilho++; else if ((m.set3_j2 || 0) > (m.set3_j1 || 0)) stats.setsPai++;
+                        }
+                    });
+                    return stats;
+                });
+
+                const carregarDadosDoBanco = async () => {
+                    try {
+                        const qPlayers = await window.FB.getDocs(window.FB.collection(window.FB.db, "jogadores"));
+                        qPlayers.forEach(docSnap => {
+                            const pIdx = players.value.findIndex(p => p.docId === docSnap.id);
+                            if(pIdx !== -1 && docSnap.data().photo) players.value[pIdx].photo = docSnap.data().photo;
+                        });
+
+                        const qLocais = await window.FB.getDocs(window.FB.collection(window.FB.db, "locais"));
+                        locaisLista.value = qLocais.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                        const qMatches = await window.FB.getDocs(window.FB.collection(window.FB.db, "partidas"));
+                        matches.value = qMatches.docs.map(d => ({ id: d.id, ...d.data() }));
+                        calcularVitoriasDinamicas();
+                    } catch (error) { console.error(error); }
+                };
+
+                const calcularVitoriasDinamicas = () => {
+                    let f = 0, p = 0;
+                    matches.value.forEach(m => { if (m.tipo === 'oficial') { m.vencedor_id === 1 ? f++ : (m.vencedor_id === 2 ? p++ : 0); } });
+                    players.value[0].wins = f; players.value[1].wins = p;
+                };
+
+                const inicializarPWA = () => {
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        e.preventDefault();
+                        deferredPrompt.value = e;
+                    });
+
+                    window.addEventListener('appinstalled', () => {
+                        deferredPrompt.value = null;
+                        alert('Machado\'s Grand Slam instalado com sucesso!');
+                    });
+
+                    if ('serviceWorker' in navigator) {
+                        const swCode = `self.addEventListener('fetch', function(event) {});`;
+                        const blob = new Blob([swCode], { type: 'application/javascript' });
+                        const swUrl = URL.createObjectURL(blob);
+                        navigator.serviceWorker.register(swUrl).catch(err => console.log('Erro SW:', err));
+                    }
+                };
+
+                const installPWA = async () => {
+                    if (!deferredPrompt.value) return;
+                    deferredPrompt.value.prompt();
+                    const { outcome } = await deferredPrompt.value.userChoice;
+                    if (outcome === 'accepted') deferredPrompt.value = null;
+                };
+
+                onMounted(() => {
+                    carregarDadosDoBanco();
+                    inicializarPWA();
+                });
+
+                const getLocalPhoto = (nome) => {
+                    const l = locaisLista.value.find(l => l.nome.toLowerCase() === nome.toLowerCase());
+                    return l?.foto || FOTO_PADRAO;
+                };
+
+                const filteredWinRate = computed(() => {
+                    const f = filteredMatchesForStats.value.filter(m => m.vencedor_id !== 0);
+                    if(!f.length) return { j1: 0, j2: 0 };
+                    let j1 = f.filter(m => m.vencedor_id === 1).length;
+                    return { j1: Math.round((j1 / f.length) * 100), j2: Math.round(((f.length - j1) / f.length) * 100) };
+                });
+
+                const locaisEstatísticas = computed(() => {
+                    const est = {};
+                    locaisLista.value.forEach(l => est[l.nome] = { nome: l.nome, foto: l.foto || FOTO_PADRAO, total: 0, vitoriasFilho: 0, vitoriasPai: 0, derrotasFilho: 0, derrotasPai: 0 });
+                    filteredMatchesForStats.value.forEach(m => {
+                        if (m.local && est[m.local]) {
+                            est[m.local].total++;
+                            m.vencedor_id === 1 ? (est[m.local].vitoriasFilho++, est[m.local].derrotasPai++) : (est[m.local].vitoriasPai++, est[m.local].derrotasFilho++);
+                        }
+                    });
+                    return Object.values(est).filter(e => e.total > 0).sort((a,b) => b.total - a.total);
+                });
+
+                const calcularAproveitamentoLocal = (estat) => {
+                    let v = loggedInUser.value === 1 ? estat.vitoriasFilho : estat.vitoriasPai;
+                    return estat.total ? Math.round((v / estat.total) * 100) : 0;
+                };
+
+                const winRate = (p) => {
+                    const t = players.value[0].wins + players.value[1].wins;
+                    return t ? Math.round((p.wins / t) * 100) : 0;
+                };
+
+                const formatScore = (m) => {
+                    let s = `${m.set1_j1}-${m.set1_j2}, ${m.set2_j1}-${m.set2_j2}`;
+                    if (m.set3_j1 || m.set3_j2) s += `, ${m.set3_j1}-${m.set3_j2}`;
+                    return s;
+                };
+
+                const uploadProfilePhoto = (ev) => {
+                    const f = ev.target.files[0]; if (!f) return;
+                    const r = new FileReader(); r.onload = async (e) => {
+                        try {
+                            await window.FB.updateDoc(window.FB.doc(window.FB.db, "jogadores", activePlayer.value.docId), { photo: e.target.result });
+                            activePlayer.value.photo = e.target.result;
+                        } catch (err) { console.error(err); }
+                    }; r.readAsDataURL(f);
+                };
+
+                const uploadCourtPhoto = (ev, loc) => {
+                    const f = ev.target.files[0]; if (!f) return;
+                    const r = new FileReader(); r.onload = async (e) => {
+                        try {
+                            await window.FB.updateDoc(window.FB.doc(window.FB.db, "locais", loc.id), { foto: e.target.result });
+                            loc.foto = e.target.result;
+                        } catch (err) { console.error(err); }
+                    }; r.readAsDataURL(f);
+                };
+
+                const apagarLocal = async (loc) => {
+                    if (!confirm(`Deseja apagar o local "${loc.nome}" permanentemente?`)) return;
+                    try {
+                        await window.FB.deleteDoc(window.FB.doc(window.FB.db, "locais", loc.id));
+                        locaisLista.value = locaisLista.value.filter(l => l.id !== loc.id);
+                        alert("Local excluído com sucesso!");
+                    } catch (e) { console.error(e); }
+                };
+
+                const registerMatch = async () => {
+                    let lf = form.value.localSelecionado;
+                    if (lf === 'novo') {
+                        lf = form.value.novoLocalNome.trim();
+                        if (!lf) return alert("Digite o nome do novo local!");
+                        const d = await window.FB.addDoc(window.FB.collection(window.FB.db, "locais"), { nome: lf, foto: FOTO_PADRAO });
+                        locaisLista.value.push({ id: d.id, nome: lf, foto: FOTO_PADRAO });
+                    }
+                    if (!lf) return alert("Selecione um local.");
+
+                    let s1G = form.value.set1_j1, s1O = form.value.set1_j2;
+                    let s2G = form.value.set2_j1, s2O = form.value.set2_j2;
+                    let s3G = form.value.set3_j1, s3O = form.value.set3_j2;
+
+                    let setsG = (s1G > s1O ? 1:0) + (s2G > s2O ? 1:0) + (s3G > s3O ? 1:0);
+                    let setsO = (s1O > s1G ? 1:0) + (s2O > s2G ? 1:0) + (s3O > s3G ? 1:0);
+
+                    const matchData = {
+                        data: form.value.data, local: lf, quadra: form.value.quadra, tipo: form.value.tipo,
+                        vencedor_id: setsG > setsO ? 1 : 2,
+                        set1_j1: s1G, set1_j2: s1O, set2_j1: s2G, set2_j2: s2O,
+                        set3_j1: (s3G || s3O) ? s3G : null, set3_j2: (s3G || s3O) ? s3O : null
+                    };
+
+                    if (form.value.id) {
+                        await window.FB.updateDoc(window.FB.doc(window.FB.db, "partidas", form.value.id), matchData);
+                        const idx = matches.value.findIndex(m => m.id === form.value.id);
+                        if(idx !== -1) matches.value[idx] = { id: form.value.id, ...matchData };
+                    } else {
+                        const dRef = await window.FB.addDoc(window.FB.collection(window.FB.db, "partidas"), matchData);
+                        matches.value.push({ id: dRef.id, ...matchData });
+                    }
+                    calcularVitoriasDinamicas();
+                    resetForm();
+                    phoneActiveTab.value = 'dashboard';
+                };
+
+                const carregarParaEdicao = (m) => {
+                    form.value = { id: m.id, tipo: m.tipo, localSelecionado: m.local, novoLocalNome: '', quadra: m.quadra, set1_j1: m.set1_j1, set1_j2: m.set1_j2, set2_j1: m.set2_j1, set2_j2: m.set2_j2, set3_j1: m.set3_j1 || 0, set3_j2: m.set3_j2 || 0, data: m.data };
+                    phoneActiveTab.value = 'new-game';
+                };
+
+                const resetForm = () => form.value = { id: null, tipo: 'oficial', localSelecionado: '', novoLocalNome: '', quadra: 'Saibro', set1_j1: 0, set1_j2: 0, set2_j1: 0, set2_j2: 0, set3_j1: 0, set3_j2: 0, data: new Date().toISOString().split('T')[0] };
+
+                const apagarPartida = async (m) => {
+                    if (!confirm("Deseja apagar essa partida?")) return;
+                    await window.FB.deleteDoc(window.FB.doc(window.FB.db, "partidas", m.id));
+                    matches.value = matches.value.filter(x => x.id !== m.id);
+                    calcularVitoriasDinamicas();
+                };
+
+                return {
+                    phoneActiveTab, players, matches, locaisLista, form, sortedMatches, currentKing, currentLoser,
+                    showProfileModal, winRate, formatScore, registerMatch, apagarPartida, statsFilter,
+                    getLocalPhoto, locaisEstatísticas, loggedInUser, activePlayer, filteredWinRate, isConfrontoEmpatado,
+                    uploadProfilePhoto, uploadCourtPhoto, carregarParaEdicao, resetForm, FOTO_PADRAO, apagarLocal,
+                    calcularAproveitamentoLocal, totaisAcumulados, validarInputSet,
+                    statsYearFilter, listaAnosDisponiveis, deferredPrompt, installPWA
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
