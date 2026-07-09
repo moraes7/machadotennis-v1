@@ -1,16 +1,13 @@
-<!-- html-blob-id: index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Machado's Grand Slam</title>
-    <!-- Configurações de PWA para Mobile -->
     <meta name="theme-color" content="#13301c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Manifesto PWA Corrigido (Conversão Base64 corrigida para aceitar instalação nativa) -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJwdC1CUiIsCiAgIm5hbWUiOiAiTWFjaGFkbydzIEdyYW5kIFNsYW0iLAogICJzaG9ydF9uYW1lIjogIk1hY2hhZG8gVGVubmlzIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzEzMzAxYyIsCiAgInRoZW1lX2NvbG9yIjogIiMxMzMwMWMiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTU5NTQzNTkzNDI0OS01ZGY3ZWQ4NmUxYzA/YXV0bz1mb3JtYXQmZml0PWNyb3cmdz0xOTImcT04MCIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvanBlZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9NTEyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9CiAgXQp9">
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJwdC1CUiIsCiAgIm5hbWUiOiAiTWFjaGFkbydzIEdyYW5kIFNsYW0iLAogICJzaG9ydF9uYW1lIjogIk1hY2hhZG8gVGVubmlzIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzEzMzAxYyIsCiAgInRoZW1lX2NvbG9yIjogIiMxMzMwMWMiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTU5NTQzNTkzNDI0OS01ZGY3ZWQ4NmUxYzA/YXV0bz1mb3JtYXQmZml0PWNyb3cmdz0xOTImcT04MCIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvanBlZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly6pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9NTEyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9CiAgXQp9">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -32,7 +29,6 @@
 
     <div id="app" class="flex flex-col min-h-screen max-w-md mx-auto bg-white shadow-xl md:max-w-2xl lg:max-w-4xl">
         
-        <!-- TELA DE LOGIN / PROTEÇÃO POR SENHA -->
         <div v-if="!autenticado" class="fixed inset-0 bg-tennis-dark flex justify-center items-center z-50 p-4">
             <div class="bg-white p-6 rounded-2xl shadow-2xl text-center max-w-xs w-full border-t-4 border-tennis-neon">
                 <div class="w-16 h-16 bg-tennis-light rounded-full flex items-center justify-center mx-auto mb-3 text-tennis-brand text-2xl shadow-inner">
@@ -45,7 +41,6 @@
             </div>
         </div>
 
-        <!-- CONTEÚDO PRINCIPAL -->
         <template v-if="autenticado">
             <header class="bg-tennis-brand text-white px-4 py-4 flex justify-between items-center sticky top-0 z-40 shadow-md">
                 <div class="flex items-center gap-3">
@@ -343,7 +338,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // IMPORTADO setDoc: Essencial para criar o documento se ele não existir
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCxflD0IniEjX_M6YDLLdBK4w9gCAJ5ocg",
@@ -356,7 +352,7 @@
 
         const firebaseApp = initializeApp(firebaseConfig);
         const db = getFirestore(firebaseApp);
-        window.FB = { db, collection, addDoc, getDocs, doc, updateDoc, deleteDoc };
+        window.FB = { db, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, setDoc };
 
         const { createApp, ref, computed, onMounted } = Vue;
 
@@ -458,10 +454,22 @@
                     if (!autenticado.value) return;
                     try {
                         const qPlayers = await window.FB.getDocs(window.FB.collection(window.FB.db, "jogadores"));
-                        qPlayers.forEach(docSnap => {
-                            const pIdx = players.value.findIndex(p => p.docId === docSnap.id);
-                            if(pIdx !== -1 && docSnap.data().photo) players.value[pIdx].photo = docSnap.data().photo;
-                        });
+                        
+                        // AJUSTADO: Se a coleção jogadores estiver inteiramente vazia, o app inicializa os dois documentos padrão
+                        if (qPlayers.empty) {
+                            for (const p of players.value) {
+                                await window.FB.setDoc(window.FB.doc(window.FB.db, "jogadores", p.docId), {
+                                    name: p.name,
+                                    photo: p.photo
+                                });
+                            }
+                            console.log("Documentos de jogadores inicializados automaticamente no Firestore.");
+                        } else {
+                            qPlayers.forEach(docSnap => {
+                                const pIdx = players.value.findIndex(p => p.docId === docSnap.id);
+                                if(pIdx !== -1 && docSnap.data().photo) players.value[pIdx].photo = docSnap.data().photo;
+                            });
+                        }
 
                         const qLocais = await window.FB.getDocs(window.FB.collection(window.FB.db, "locais"));
                         locaisLista.value = qLocais.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -580,16 +588,19 @@
                     return s;
                 };
 
+                // MODIFICADO: Uso de setDoc com merge:true garante que se os IDs 'filho' ou 'pai' não existirem na coleção, eles sejam criados instantaneamente com a foto nova
                 const uploadProfilePhoto = async (ev) => {
                     const f = ev.target.files[0]; if (!f) return;
                     const base64Comprimido = await comprimirEConverterImagem(f);
                     try {
-                        await window.FB.updateDoc(window.FB.doc(window.FB.db, "jogadores", activePlayer.value.docId), { photo: base64Comprimido });
+                        await window.FB.setDoc(window.FB.doc(window.FB.db, "jogadores", activePlayer.value.docId), { 
+                            photo: base64Comprimido 
+                        }, { merge: true });
                         activePlayer.value.photo = base64Comprimido;
                         alert("Foto de perfil atualizada com sucesso!");
                     } catch (err) { 
                         console.error("Erro do Firebase:", err); 
-                        alert(`Erro ao salvar foto de perfil. Verifique se o documento dos jogadores possui ID chamado exatamente '${activePlayer.value.docId}' na coleção 'jogadores' do seu Firestore.`); 
+                        alert("Erro ao salvar foto de perfil no Firebase. Verifique as Regras de Segurança do seu Firestore."); 
                     }
                 };
 
@@ -626,7 +637,7 @@
                     let s2G = form.value.set2_j1, s2O = form.value.set2_j2;
                     let s3G = form.value.set3_j1, s3O = form.value.set3_j2;
 
-                    let jogoCompleto = true;
+                    let juegoCompleto = true;
                     if (!conferirSetNormalCompleto(s1G, s1O)) jogoCompleto = false;
                     if (!conferirSetNormalCompleto(s2G, s2O)) jogoCompleto = false;
 
