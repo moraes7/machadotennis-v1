@@ -9,7 +9,8 @@
     <meta name="theme-color" content="#13301c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJwdC1CUiIsCiAgIm5hbWUiOiAiTWFjaGFkbydzIEdyYW5kIFNsYW0iLAogICJzaG9ydF9uYW1lIjogIk1hY2hhZG8gVGVubmlzIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzEzMzAxYyIsCiAgInRoZW1lX2NvbG9yIjogIiMxMzMwMWMiLAogICJpY29uczI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTU5NTQzNTkzNDI0OS01ZGY3ZWQ4NmUxYzA/YXV0bz1mb3JtYXQmZml0PWNyb3cmdz0xOTImcT04MCIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUSUiAiaW1hZ2UvanBlZyIKICAgIH0sCiAgICB7CiAgICAgICIncmMiOiAiaHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9NTEyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9CiAgXQp9">
+    <!-- Manifesto PWA Corrigido (Conversão Base64 corrigida para aceitar instalação nativa) -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJkZWZhdWx0X2xvY2FsZSI6ICJwdC1CUiIsCiAgIm5hbWUiOiAiTWFjaGFkbydzIEdyYW5kIFNsYW0iLAogICJzaG9ydF9uYW1lIjogIk1hY2hhZG8gVGVubmlzIiwKICAic3RhcnRfdXJsIjogIi4vaW5kZXguaHRtbCIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzEzMzAxYyIsCiAgInRoZW1lX2NvbG9yIjogIiMxMzMwMWMiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTU5NTQzNTkzNDI0OS01ZGY3ZWQ4NmUxYzA/YXV0bz1mb3JtYXQmZml0PWNyb3cmdz0xOTImcT04MCIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvanBlZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE1OTU0MzU5MzQyNDktNWRmN2VkODZlMWMwP2F1dG89Zm9ybWF0JmZpdD1jcm9wJnc9NTEyJnE9ODAiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciCiAgICB9CiAgXQp9">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -579,14 +580,17 @@
                     return s;
                 };
 
-                // AJUSTADO: Agora a foto de perfil passa pelo compressor profissional antes de ir para o Firestore
                 const uploadProfilePhoto = async (ev) => {
                     const f = ev.target.files[0]; if (!f) return;
                     const base64Comprimido = await comprimirEConverterImagem(f);
                     try {
                         await window.FB.updateDoc(window.FB.doc(window.FB.db, "jogadores", activePlayer.value.docId), { photo: base64Comprimido });
                         activePlayer.value.photo = base64Comprimido;
-                    } catch (err) { console.error(err); alert("Erro ao salvar foto de perfil."); }
+                        alert("Foto de perfil atualizada com sucesso!");
+                    } catch (err) { 
+                        console.error("Erro do Firebase:", err); 
+                        alert(`Erro ao salvar foto de perfil. Verifique se o documento dos jogadores possui ID chamado exatamente '${activePlayer.value.docId}' na coleção 'jogadores' do seu Firestore.`); 
+                    }
                 };
 
                 const uploadCourtPhoto = async (ev, loc) => {
@@ -595,6 +599,7 @@
                     try {
                         await window.FB.updateDoc(window.FB.doc(window.FB.db, "locais", loc.id), { foto: base64Comprimido });
                         loc.foto = base64Comprimido;
+                        alert("Foto da quadra atualizada!");
                     } catch (err) { console.error(err); alert("Erro ao salvar foto da quadra."); }
                 };
 
