@@ -1,13 +1,11 @@
-const CACHE_NAME = 'machado-tennis-v2';
+const CACHE_NAME = 'machado-tennis-v3';
 const ASSETS = [
   './',
   './index.html',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-  'https://unpkg.com/vue@3/dist/vue.global.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js'
+  './manifest.json'
 ];
 
+// Instalação apenas dos arquivos locais internos
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -16,6 +14,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Limpeza de versões velhas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -30,10 +29,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Gerenciamento de rede seguro sem quebrar com CORS de terceiros
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).catch(() => {
+        // Fallback silencioso caso esteja offline e o recurso não esteja em cache
+      });
     })
   );
 });
