@@ -1,0 +1,75 @@
+{
+  "version": "2.14",
+  "children": [],
+  "variables": {
+    "tennis-dark": {
+      "type": "color",
+      "value": "#0d2114"
+    },
+    "tennis-brand": {
+      "type": "color",
+      "value": "#13301c"
+    },
+    "tennis-neon": {
+      "type": "color",
+      "value": "#a3cb00"
+    },
+    "tennis-accent": {
+      "type": "color",
+      "value": "#306c42"
+    },
+    "tennis-light": {
+      "type": "color",
+      "value": "#f4f7f4"
+    },
+    "tennis-border": {
+      "type": "color",
+      "value": "#d0dfd5"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#1e293b"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#64748b"
+    },
+    "text-white": {
+      "type": "color",
+      "value": "#ffffff"
+    },
+    "amber-400": {
+      "type": "color",
+      "value": "#fbbf24"
+    },
+    "amber-600": {
+      "type": "color",
+      "value": "#d97706"
+    },
+    "emerald-600": {
+      "type": "color",
+      "value": "#059669"
+    },
+    "red-600": {
+      "type": "color",
+      "value": "#dc2626"
+    },
+    "slate-50": {
+      "type": "color",
+      "value": "#f8fafc"
+    },
+    "slate-200": {
+      "type": "color",
+      "value": "#e2e8f0"
+    },
+    "font-sans": {
+      "type": "string",
+      "value": "Poppins"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    }
+  },
+  "fileToken": "b3930ed1-cce3-4928-ab31-60d6cc0ba68b"
+}

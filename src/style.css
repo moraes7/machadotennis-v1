@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tennis-dark: #0d2114;
+  --color-tennis-brand: #13301c;
+  --color-tennis-neon: #a3cb00;
+  --color-tennis-accent: #306c42;
+  --color-tennis-light: #f4f7f4;
+  --color-tennis-border: #d0dfd5;
+  --font-sans: "Poppins", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover .tooltip-text,
+.tooltip:focus-within .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
