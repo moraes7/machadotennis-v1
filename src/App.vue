@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import { useAuth } from './composables/useAuth.js'
 import { useFirebase } from './composables/useFirebase.js'
 import { useStats } from './composables/useStats.js'
@@ -7,6 +7,7 @@ import { usePWA } from './composables/usePWA.js'
 import { useMatchForm } from './composables/useMatchForm.js'
 import { useImageUtils } from './composables/useImageUtils.js'
 import { usePDF } from './composables/usePDF.js'
+import { useMigracao } from './composables/useMigracao.js'
 import LoginScreen from './views/LoginScreen.vue'
 import Dashboard from './views/Dashboard.vue'
 import NewGame from './views/NewGame.vue'
@@ -23,6 +24,13 @@ const { form, validarInputSet, registerMatch, carregarParaEdicao, resetForm, apa
   useMatchForm(matches, locaisLista, calcularVitorias, FOTO_PADRAO)
 const { uploadProfilePhoto, uploadCourtPhoto, apagarLocal } = useImageUtils(locaisLista)
 const { exportarParaPDF } = usePDF()
+const { status: migracaoStatus } = useMigracao()
+
+watch(migracaoStatus, (val) => {
+  if (val === 'done') {
+    carregarDadosDoBanco()
+  }
+})
 
 const activeTab = ref('dashboard')
 const showProfileModal = ref(false)
@@ -92,7 +100,12 @@ onMounted(() => {
             class="text-xs bg-tennis-accent hover:bg-tennis-accent/80 px-3 py-1.5 rounded-lg text-tennis-neon font-bold flex items-center gap-1 transition">
             <i class="fa-solid fa-sliders"></i> Configurações
           </button>
-          <button v-else @click="handleLogout"
+          <button v-if="loggedInUser !== 0" @click="handleLogout"
+            class="text-xs bg-red-600 hover:bg-red-700 px-2.5 py-1.5 rounded-lg text-white font-bold transition"
+            title="Sair">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+          <button v-if="loggedInUser === 0" @click="handleLogout"
             class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg text-white font-bold flex items-center gap-1 transition">
             <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
           </button>

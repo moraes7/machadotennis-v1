@@ -36,7 +36,10 @@ export function useFirebase() {
     let f = 0, p = 0
     matches.value.forEach(m => {
       if (m.tipo === 'oficial' && m.status !== 'Incompleto') {
-        m.vencedor_id === 1 ? f++ : (m.vencedor_id === 2 ? p++ : 0)
+        const eMachado = !m.jogador1_id || m.jogador1_id === 'filho' || m.jogador1_id === 'pai'
+        if (eMachado) {
+          m.vencedor_id === 1 ? f++ : (m.vencedor_id === 2 ? p++ : 0)
+        }
       }
     })
     players.value[0].wins = f

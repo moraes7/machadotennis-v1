@@ -1,14 +1,18 @@
 <script setup>
 import { useImageUtils } from '../composables/useImageUtils.js'
+import { useMigracao } from '../composables/useMigracao.js'
 
 const props = defineProps({
   show: Boolean, players: Array, loggedInUser: Number,
   locaisLista: Array, FOTO_PADRAO: String, onLogout: Function, onClose: Function
 })
 
-const emit = defineEmits(['close', 'logout', 'uploaded'])
+defineEmits(['close', 'logout', 'uploaded'])
 
 const { uploadProfilePhoto, uploadCourtPhoto, apagarLocal } = useImageUtils(props.locaisLista)
+const { status, total, processados, erros, migracaoConcluida, migrarPartidas } = useMigracao()
+
+const isAdmin = props.loggedInUser === 1 || props.loggedInUser === 2
 </script>
 
 <template>
@@ -37,31 +41,74 @@ const { uploadProfilePhoto, uploadCourtPhoto, apagarLocal } = useImageUtils(prop
             </div>
           </div>
         </div>
-        <div>
+
+        <div v-if="isAdmin">
           <button @click="$emit('logout')"
             class="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm">
             <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da Conta
           </button>
         </div>
-        <hr class="border-slate-100">
-        <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Imagens e Exclusão de Locais</span>
-          <div class="space-y-2 mt-2">
-            <div v-for="loc in locaisLista" :key="loc.id"
-              class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200 gap-2">
-              <div class="flex items-center gap-2 min-w-0">
-                <img :src="loc.foto || FOTO_PADRAO" class="w-8 h-8 object-cover rounded shadow-sm shrink-0">
-                <span class="text-xs font-semibold text-slate-700 truncate">{{ loc.nome }}</span>
+
+        <hr v-if="isAdmin && !migracaoConcluida" class="border-slate-100">
+
+        <div v-if="isAdmin && !migracaoConcluida">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Migração do Banco</span>
+          <p class="text-[11px] text-slate-500 mb-2">
+            Necessário para expandir o app para novos usuários. Adiciona identificadores nas partidas existentes.
+          </p>
+
+          <div v-if="status === 'idle'">
+            <button @click="migrarPartidas"
+              class="w-full bg-tennis-accent hover:bg-tennis-brand text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-sm">
+              <i class="fa-solid fa-database"></i> Migrar Partidas
+            </button>
+          </div>
+
+          <div v-if="status === 'running'" class="space-y-2">
+            <div class="w-full bg-slate-200 rounded-full h-2.5">
+              <div class="bg-tennis-accent h-2.5 rounded-full transition-all duration-300"
+                :style="{ width: total > 0 ? (processados / total * 100) + '%' : '0%' }">
               </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <label class="bg-tennis-brand hover:bg-tennis-accent text-white text-[10px] px-2.5 py-1.5 rounded font-bold cursor-pointer">
-                  <i class="fa-solid fa-upload"></i>
-                  <input type="file" accept="image/*" class="hidden" @change="e => uploadCourtPhoto(e, loc, loggedInUser)">
-                </label>
-                <button @click="apagarLocal(loc, loggedInUser)"
-                  class="bg-red-50 hover:bg-red-100 text-red-600 text-xs p-1.5 rounded border border-red-200" title="Apagar Local">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
+            </div>
+            <p class="text-[11px] text-slate-500 text-center">
+              Migrando {{ processados }} de {{ total }} partidas...
+            </p>
+          </div>
+
+          <div v-if="status === 'done'" class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs p-3 rounded-xl text-center font-semibold">
+            <i class="fa-solid fa-check-circle text-emerald-500"></i> Migração concluída! {{ total }} partidas atualizadas.
+          </div>
+
+          <div v-if="status === 'error'" class="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl text-center space-y-2">
+            <p class="font-semibold"><i class="fa-solid fa-exclamation-circle"></i> {{ erros }} erro(s) na migração.</p>
+            <button @click="migrarPartidas"
+              class="bg-red-600 hover:bg-red-700 text-white py-1.5 px-4 rounded-lg font-bold text-[10px] uppercase">
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+
+        <div v-if="isAdmin || (loggedInUser !== 0)">
+          <hr class="border-slate-100">
+          <div class="mt-4">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Imagens e Exclusão de Locais</span>
+            <div class="space-y-2 mt-2">
+              <div v-for="loc in locaisLista" :key="loc.id"
+                class="flex items-center justify-between bg-slate-50 p-2 rounded-lg border border-slate-200 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <img :src="loc.foto || FOTO_PADRAO" class="w-8 h-8 object-cover rounded shadow-sm shrink-0">
+                  <span class="text-xs font-semibold text-slate-700 truncate">{{ loc.nome }}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <label class="bg-tennis-brand hover:bg-tennis-accent text-white text-[10px] px-2.5 py-1.5 rounded font-bold cursor-pointer">
+                    <i class="fa-solid fa-upload"></i>
+                    <input type="file" accept="image/*" class="hidden" @change="e => uploadCourtPhoto(e, loc, loggedInUser)">
+                  </label>
+                  <button @click="apagarLocal(loc, loggedInUser)"
+                    class="bg-red-50 hover:bg-red-100 text-red-600 text-xs p-1.5 rounded border border-red-200" title="Apagar Local">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
